@@ -74,6 +74,7 @@ class PDFMerger:
         self.canvas.grid(columnspan=3, rowspan=7)
 
         # vars
+
         self.first_pdf_num_all_checkbox_state = tk.IntVar()
         self.first_pdf_num_pages_checkbox_state = tk.IntVar()
         self.first_browse_text = tk.StringVar()
@@ -186,7 +187,7 @@ class PDFMerger:
             onvalue=1,
             offvalue=0,
             state="disabled",
-            command=lambda: self.change__second_pages_checkbox_state(),
+            command=lambda: self.change_second_pages_checkbox_state(),
         )
 
         # second pdf particular pages checkbox
@@ -224,7 +225,7 @@ class PDFMerger:
             textvariable=self.merge_text,
             bg="black",
             fg="white",
-            height=2,
+            height=12,
             width=15,
             state="disabled",
             command=lambda: self.merge_pdfs(),
@@ -248,7 +249,7 @@ class PDFMerger:
         self.second_pdf_button_set_page_num.grid(column=1, row=5)
         self.second_browse_btn.grid(column=1, row=6)
 
-        self.merge_btn.grid(column=2, row=3)
+        self.merge_btn.grid(column=2, row=0, rowspan=7)
 
     def open_first_pdf(self):
         self.first_browse_text.set("Loading...")
@@ -344,8 +345,10 @@ class PDFMerger:
             filename = pdfname.cget("text")
             pdfname.config(text=f"{filename.split( )[0]} {pages_range}")
             if first:
+                # TODO add checker if page is out of pdf page range throw warning
                 self.first_num_pages = pages_range
             else:
+                # TODO add checker if page is out of pdf page range
                 self.second_num_pages = pages_range
         else:
             messagebox.showwarning(title="Warning", message="Wrong pages range format.")
@@ -359,11 +362,17 @@ class PDFMerger:
         self.second_num_pages = None
         self.first_pdf_num_pages_checkbox.config(state="disabled")
         self.first_pdf_num_all_checkbox.config(state="disabled")
+        self.first_pdf_num_pages_text.delete(1.0, tk.END)
+        self.first_pdf_num_pages_text.config(state="disabled")
+        self.first_pdf_button_set_page_num.config(state="disabled")
         self.first_pdf_num_all_checkbox.deselect()
         self.first_pdfname.config(text="")
         self.second_pdf_num_pages_checkbox.config(state="disabled")
         self.second_pdf_num_all_checkbox.config(state="disabled")
+        self.second_pdf_num_pages_text.delete(1.0, tk.END)
+        self.second_pdf_num_pages_text.config(state="disabled")
         self.second_pdf_num_all_checkbox.deselect()
+        self.second_pdf_button_set_page_num.config(state="disabled")
         self.second_pdfname.config(text="")
         self.merge_btn.config(state="disabled")
 
@@ -374,40 +383,49 @@ class PDFMerger:
                 page_obj = self.pdf_1.getPage(page_num)
                 merged_pdf.addPage(page_obj)
         else:
-            pages_list = self.first_num_pages.split(";")
-            for pages in pages_list:
-                if "-" in pages:
-                    pages_range_list = pages.split("-")
-                    for page in range(
-                        int(pages_range_list[0].strip()) - 1,
-                        int(pages_range_list[1].strip()),
-                    ):
-                        page_obj = self.pdf_1.getPage(page)
-                        merged_pdf.addPage(page_obj)
-                else:
-                    if pages:
-                        page_obj = self.pdf_1.getPage(int(pages.strip()) - 1)
-                        merged_pdf.addPage(page_obj)
+            if len(self.first_pdfname.cget("text").split()) > 1:
+                pages_list = self.first_num_pages.split(";")
+                for pages in pages_list:
+                    if "-" in pages:
+                        pages_range_list = pages.split("-")
+                        for page in range(
+                            int(pages_range_list[0].strip()) - 1,
+                            int(pages_range_list[1].strip()),
+                        ):
+                            page_obj = self.pdf_1.getPage(page)
+                            merged_pdf.addPage(page_obj)
+                    else:
+                        if pages:
+                            page_obj = self.pdf_1.getPage(int(pages.strip()) - 1)
+                            merged_pdf.addPage(page_obj)
+            else:
+                return messagebox.showwarning(
+                    title="Warning", message="Pages range is not set."
+                )
         if self.second_pdf_num_pages_checkbox_state.get() == 0:
             for page_num in range(self.second_num_pages):
                 page_obj = self.pdf_2.getPage(page_num)
                 merged_pdf.addPage(page_obj)
         else:
-            pages_list = self.second_num_pages.split(";")
-            for pages in pages_list:
-                if "-" in pages:
-                    pages_range_list = pages.split("-")
-                    for page in range(
-                        int(pages_range_list[0].strip()) - 1,
-                        int(pages_range_list[1].strip()),
-                    ):
-                        page_obj = self.pdf_2.getPage(page)
-                        merged_pdf.addPage(page_obj)
-                else:
-                    if pages:
-                        page_obj = self.pdf_2.getPage(int(pages.strip()) - 1)
-                        merged_pdf.addPage(page_obj)
-
+            if len(self.second_pdfname.cget("text").split()) > 1:
+                pages_list = self.second_num_pages.split(";")
+                for pages in pages_list:
+                    if "-" in pages:
+                        pages_range_list = pages.split("-")
+                        for page in range(
+                            int(pages_range_list[0].strip()) - 1,
+                            int(pages_range_list[1].strip()),
+                        ):
+                            page_obj = self.pdf_2.getPage(page)
+                            merged_pdf.addPage(page_obj)
+                    else:
+                        if pages:
+                            page_obj = self.pdf_2.getPage(int(pages.strip()) - 1)
+                            merged_pdf.addPage(page_obj)
+            else:
+                return messagebox.showwarning(
+                    title="Warning", message="Pages range is not set."
+                )
         f = asksaveasfile(  # TODO change default location to root
             mode="w", defaultextension=".pdf", filetypes=[("Pdf file", "*.pdf")]
         )
@@ -426,4 +444,6 @@ ico = Image.open("pdf.png")
 photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
 mygui = PDFMerger(root)
+root.minsize(900, 300)
+root.maxsize(900, 300)
 root.mainloop()
