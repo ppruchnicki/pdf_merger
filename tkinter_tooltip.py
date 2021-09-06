@@ -1,7 +1,7 @@
 import tkinter as tk
 
 
-class ToolTip(object):  # TODO send to other file
+class ToolTip(object):
     def __init__(self, widget):
         self.widget = widget
         self.tipwindow = None
