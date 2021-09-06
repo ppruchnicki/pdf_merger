@@ -6,8 +6,8 @@ name = "pypi"
 [packages]
 pdbpp = "*"
 tk = "*"
-pypdf2 = "*"
-pillow = "*"
+PyPDF2 = "*"
+Pillow = "*"
 
 [dev-packages]
 

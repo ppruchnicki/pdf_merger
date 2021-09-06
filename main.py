@@ -1,6 +1,8 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
-from tkinter.filedialog import askopenfile, asksaveasfile
+from tkinter.filedialog import askopenfilename, asksaveasfile
+from tkinter_tooltip import ToolTip
 
 import PyPDF2
 from PIL import Image, ImageTk
@@ -8,54 +10,6 @@ from PIL import Image, ImageTk
 from io import TextIOWrapper
 import os
 import re
-
-
-class ToolTip(object):  # TODO send to other file
-    def __init__(self, widget):
-        self.widget = widget
-        self.tipwindow = None
-        self.id = None
-        self.x = self.y = 0
-
-    def showtip(self, text):
-        "Display text in tooltip window"
-        self.text = text
-        if self.tipwindow or not self.text:
-            return
-        x, y, cx, cy = self.widget.bbox("insert")
-        x = x + self.widget.winfo_rootx() + 27
-        y = y + cy + self.widget.winfo_rooty() + 27
-        self.tipwindow = tw = tk.Toplevel(self.widget)
-        tw.wm_overrideredirect(1)
-        tw.wm_geometry("+%d+%d" % (x, y))
-        label = tk.Label(
-            tw,
-            text=self.text,
-            justify="left",
-            background="#ffffe0",
-            relief="solid",
-            borderwidth=1,
-            font=("tahoma", "8", "normal"),
-        )
-        label.pack(ipadx=1)
-
-    def hidetip(self):
-        tw = self.tipwindow
-        self.tipwindow = None
-        if tw:
-            tw.destroy()
-
-    def createToolTip(widget, text):
-        toolTip = ToolTip(widget)
-
-        def enter(event):
-            toolTip.showtip(text)
-
-        def leave(event):
-            toolTip.hidetip()
-
-        widget.bind("<Enter>", enter)
-        widget.bind("<Leave>", leave)
 
 
 class PDFMerger:
@@ -68,14 +22,14 @@ class PDFMerger:
         global pdf_2
         global second_pdf_merge_num_pages
         global second_pdf_original_range
-        global canvas
+        global frame
         global merge_approval
 
         self.master = master
         self.merge_approval = [False, False]
         master.title("PDF Merger")
-        self.canvas = tk.Canvas(self.master, width=900, height=300)
-        self.canvas.grid(columnspan=3, rowspan=7)
+        self.frame = ttk.Frame(self.master, width=900, height=300)
+        self.frame.grid(columnspan=3, rowspan=7)
 
         # vars
 
@@ -88,22 +42,24 @@ class PDFMerger:
         self.merge_text = tk.StringVar()
 
         # first instruction
-        self.first_instruction = tk.Label(
-            self.master, text="Select first PDF file to merge"
+        self.first_instruction = ttk.Label(
+            self.master,
+            text="Select first PDF",
+            font=12,
         )
 
         # first pdfname
-        self.first_pdfname = tk.Label(self.master, text="")
+        self.first_pdfname = ttk.Label(self.master, text="")
 
         # second pdf pages textbox
-        self.first_pdf_num_pages_text = tk.Entry(
+        self.first_pdf_num_pages_text = ttk.Entry(
             self.master,
             width=10,
             state="disabled",
         )
 
         # second pdf pages set button
-        self.first_pdf_button_set_page_num = tk.Button(
+        self.first_pdf_button_set_page_num = ttk.Button(
             self.master,
             text="Set",
             state="disabled",
@@ -115,7 +71,7 @@ class PDFMerger:
         )
 
         # second pdf all pages checkbox
-        self.first_pdf_num_all_checkbox = tk.Checkbutton(
+        self.first_pdf_num_all_checkbox = ttk.Checkbutton(
             self.master,
             text="All",
             variable=self.first_pdf_num_all_checkbox_state,
@@ -126,7 +82,7 @@ class PDFMerger:
         )
 
         # second pdf particular pages checkbox
-        self.first_pdf_num_pages_checkbox = tk.Checkbutton(
+        self.first_pdf_num_pages_checkbox = ttk.Checkbutton(
             self.master,
             text="Pages",
             variable=self.first_pdf_num_pages_checkbox_state,
@@ -137,12 +93,9 @@ class PDFMerger:
         )
 
         # first browse button
-        self.first_browse_btn = tk.Button(
+        self.first_browse_btn = ttk.Button(
             self.master,
             textvariable=self.first_browse_text,
-            bg="black",
-            fg="white",
-            height=2,
             width=15,
             command=lambda: self.open_first_pdf(),
         )
@@ -155,22 +108,24 @@ class PDFMerger:
         )
 
         # second instruction
-        self.second_instruction = tk.Label(
-            self.master, text="Select second PDF file to merge"
+        self.second_instruction = ttk.Label(
+            self.master,
+            text="Select second PDF",
+            font=12,
         )
 
         # second pdfname
-        self.second_pdfname = tk.Label(self.master, text="")
+        self.second_pdfname = ttk.Label(self.master, text="")
 
         # second pdf pages textbox
-        self.second_pdf_num_pages_text = tk.Entry(
+        self.second_pdf_num_pages_text = ttk.Entry(
             self.master,
             width=10,
             state="disabled",
         )
 
         # second pdf pages set button
-        self.second_pdf_button_set_page_num = tk.Button(
+        self.second_pdf_button_set_page_num = ttk.Button(
             self.master,
             text="Set",
             state="disabled",
@@ -182,7 +137,7 @@ class PDFMerger:
         )
 
         # second pdf all pages checkbox
-        self.second_pdf_num_all_checkbox = tk.Checkbutton(
+        self.second_pdf_num_all_checkbox = ttk.Checkbutton(
             self.master,
             text="All",
             variable=self.second_pdf_num_all_checkbox_state,
@@ -193,7 +148,7 @@ class PDFMerger:
         )
 
         # second pdf particular pages checkbox
-        self.second_pdf_num_pages_checkbox = tk.Checkbutton(
+        self.second_pdf_num_pages_checkbox = ttk.Checkbutton(
             self.master,
             text="Pages",
             variable=self.second_pdf_num_pages_checkbox_state,
@@ -210,24 +165,18 @@ class PDFMerger:
         )
 
         # second browse button
-        self.second_browse_btn = tk.Button(
+        self.second_browse_btn = ttk.Button(
             self.master,
             textvariable=self.second_browse_text,
-            bg="black",
-            fg="white",
-            height=2,
             width=15,
             command=lambda: self.open_second_pdf(),
         )
         self.second_browse_text.set("Browse")
 
         # merge button
-        self.merge_btn = tk.Button(
+        self.merge_btn = ttk.Button(
             self.master,
             textvariable=self.merge_text,
-            bg="black",
-            fg="white",
-            height=12,
             width=15,
             state="disabled",
             command=lambda: self.merge_pdfs(),
@@ -255,27 +204,29 @@ class PDFMerger:
 
     def open_first_pdf(self):
         self.first_browse_text.set("Loading...")
-        self.raw_pdf_1 = askopenfile(
+        self.raw_pdf_1 = askopenfilename(
             parent=root,
-            mode="rb",
             title="Choose a pdf",
             filetypes=[("Pdf file", "*.pdf")],
         )
         if self.raw_pdf_1:
             read_pdf = PyPDF2.PdfFileReader(self.raw_pdf_1)
-            first_pdfname_txt = os.path.basename(self.raw_pdf_1.name)
+            first_pdfname_txt = os.path.basename(self.raw_pdf_1)
             self.first_pdf_original_range = read_pdf.getNumPages()
             self.first_pdf_merge_num_pages = self.first_pdf_original_range
             self.first_pdfname.config(text=first_pdfname_txt)
             self.pdf_1 = read_pdf
             self.first_pdf_num_pages_checkbox.config(state="normal")
             self.first_pdf_num_all_checkbox.config(state="normal")
-            self.first_pdf_num_all_checkbox.select()
+            self.select_checkbox(self.first_pdf_num_all_checkbox_state)
             self.merge_approval[0] = True
         self.first_browse_text.set("Browse")
 
-    def deselect_checkbox(self, checkbox):
-        checkbox.deselect()
+    def deselect_checkbox(self, checkbox_state):
+        checkbox_state.set(0)
+
+    def select_checkbox(self, checkbox_state):
+        checkbox_state.set(1)
 
     def lock_unlock_merge_btn(self):
         if self.merge_approval[0] and self.merge_approval[1]:
@@ -285,7 +236,7 @@ class PDFMerger:
 
     def change_first_pages_checkbox_state(self):
         if self.first_pdf_num_pages_checkbox_state.get() == 1:
-            self.deselect_checkbox(self.first_pdf_num_pages_checkbox)
+            self.deselect_checkbox(self.first_pdf_num_pages_checkbox_state)
             self.first_pdf_num_pages_text.config(state="disabled")
             self.first_pdf_button_set_page_num.config(state="disabled")
             filename = self.first_pdfname.cget("text")
@@ -297,7 +248,7 @@ class PDFMerger:
 
     def change_second_pages_checkbox_state(self):
         if self.second_pdf_num_pages_checkbox_state.get() == 1:
-            self.deselect_checkbox(self.second_pdf_num_pages_checkbox)
+            self.deselect_checkbox(self.second_pdf_num_pages_checkbox_state)
             self.second_pdf_num_pages_text.config(state="disabled")
             self.second_pdf_button_set_page_num.config(state="disabled")
             filename = self.second_pdfname.cget("text")
@@ -311,7 +262,7 @@ class PDFMerger:
         if self.first_pdf_num_pages_checkbox_state.get() == 1:
             self.first_pdf_num_pages_text.config(state="normal")
             self.first_pdf_button_set_page_num.config(state="normal")
-            self.deselect_checkbox(self.first_pdf_num_all_checkbox)
+            self.deselect_checkbox(self.first_pdf_num_all_checkbox_state)
             self.merge_approval[0] = False
             self.lock_unlock_merge_btn()
         else:
@@ -322,7 +273,7 @@ class PDFMerger:
         if self.second_pdf_num_pages_checkbox_state.get() == 1:
             self.second_pdf_num_pages_text.config(state="normal")
             self.second_pdf_button_set_page_num.config(state="normal")
-            self.deselect_checkbox(self.second_pdf_num_all_checkbox)
+            self.deselect_checkbox(self.second_pdf_num_all_checkbox_state)
             self.merge_approval[1] = False
             self.lock_unlock_merge_btn()
         else:
@@ -333,22 +284,21 @@ class PDFMerger:
 
     def open_second_pdf(self):
         self.second_browse_text.set("Loading...")
-        self.raw_pdf_2 = askopenfile(
+        self.raw_pdf_2 = askopenfilename(
             parent=root,
-            mode="rb",
             title="Choose a pdf",
             filetypes=[("Pdf file", "*.pdf")],
         )
         if self.raw_pdf_2:
             read_pdf = PyPDF2.PdfFileReader(self.raw_pdf_2)
-            second_pdfname_txt = os.path.basename(self.raw_pdf_2.name)
+            second_pdfname_txt = os.path.basename(self.raw_pdf_2)
             self.second_pdf_original_range = read_pdf.getNumPages()
             self.second_pdf_merge_num_pages = self.second_pdf_original_range
             self.second_pdfname.config(text=second_pdfname_txt)
             self.pdf_2 = read_pdf
             self.second_pdf_num_pages_checkbox.config(state="normal")
             self.second_pdf_num_all_checkbox.config(state="normal")
-            self.second_pdf_num_all_checkbox.select()
+            self.select_checkbox(self.second_pdf_num_all_checkbox_state)
             self.merge_approval[1] = True
             self.lock_unlock_merge_btn()
         if (
@@ -406,19 +356,19 @@ class PDFMerger:
         self.merge_approval = None
         self.first_pdf_num_pages_checkbox.config(state="disabled")
         self.first_pdf_num_all_checkbox.config(state="disabled")
-        self.first_pdf_num_pages_text.delete(1.0, tk.END)
+        self.first_pdf_num_pages_text.delete(0, tk.END)
         self.first_pdf_num_pages_text.config(state="disabled")
         self.first_pdf_button_set_page_num.config(state="disabled")
-        self.first_pdf_num_all_checkbox.deselect()
-        self.first_pdf_num_pages_checkbox.deselect()
+        self.deselect_checkbox(self.first_pdf_num_all_checkbox_state)
+        self.deselect_checkbox(self.first_pdf_num_pages_checkbox_state)
         self.first_pdfname.config(text="")
         self.second_pdf_num_pages_checkbox.config(state="disabled")
         self.second_pdf_num_all_checkbox.config(state="disabled")
-        self.second_pdf_num_pages_text.delete(1.0, tk.END)
+        self.second_pdf_num_pages_text.delete(0, tk.END)
         self.second_pdf_num_pages_text.config(state="disabled")
         self.second_pdf_button_set_page_num.config(state="disabled")
-        self.second_pdf_num_all_checkbox.deselect()
-        self.second_pdf_num_pages_checkbox.deselect()
+        self.deselect_checkbox(self.second_pdf_num_all_checkbox_state)
+        self.deselect_checkbox(self.second_pdf_num_pages_checkbox_state)
         self.second_pdfname.config(text="")
         self.merge_btn.config(state="disabled")
 
@@ -486,6 +436,8 @@ class PDFMerger:
 
 
 root = tk.Tk()
+root.tk.call("source", "sun-valley.tcl")
+root.tk.call("set_theme", "light")
 ico = Image.open("pdf.png")
 photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
