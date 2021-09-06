@@ -28,11 +28,10 @@ class PDFMerger:
         self.master = master
         self.merge_approval = [False, False]
         master.title("PDF Merger")
-        self.frame = ttk.Frame(self.master, width=900, height=300)
+        self.frame = ttk.Frame(self.master, width=660, height=300)
         self.frame.grid(columnspan=3, rowspan=7)
 
         # vars
-
         self.first_pdf_num_all_checkbox_state = tk.IntVar()
         self.first_pdf_num_pages_checkbox_state = tk.IntVar()
         self.first_browse_text = tk.StringVar()
@@ -98,6 +97,7 @@ class PDFMerger:
             textvariable=self.first_browse_text,
             width=15,
             command=lambda: self.open_first_pdf(),
+            style="Accent.TButton",
         )
         self.first_browse_text.set("Browse")
 
@@ -170,6 +170,7 @@ class PDFMerger:
             textvariable=self.second_browse_text,
             width=15,
             command=lambda: self.open_second_pdf(),
+            style="Accent.TButton",
         )
         self.second_browse_text.set("Browse")
 
@@ -180,6 +181,7 @@ class PDFMerger:
             width=15,
             state="disabled",
             command=lambda: self.merge_pdfs(),
+            style="Accent.TButton",
         )
         self.merge_text.set("Merge")
 
@@ -200,7 +202,7 @@ class PDFMerger:
         self.second_pdf_button_set_page_num.grid(column=1, row=5)
         self.second_browse_btn.grid(column=1, row=6)
 
-        self.merge_btn.grid(column=2, row=0, rowspan=7)
+        self.merge_btn.grid(column=2, row=0, rowspan=7, ipady=80, ipadx=10)
 
     def open_first_pdf(self):
         self.first_browse_text.set("Loading...")
@@ -422,12 +424,13 @@ class PDFMerger:
                 return messagebox.showwarning(
                     title="Warning", message="Pages range is not set."
                 )
-        f = asksaveasfile(  # TODO change default location to root
+        f = asksaveasfile(
             mode="w", defaultextension=".pdf", filetypes=[("Pdf file", "*.pdf")]
         )
-        f.close()
         if f is None:  # asksaveasfile return `None` if dialog closed with "cancel".
             return
+        else:
+            f.close()
         pdf_output_pdf = open(f.name, "wb")
         merged_pdf.write(pdf_output_pdf)
         pdf_output_pdf.close()
@@ -438,10 +441,10 @@ class PDFMerger:
 root = tk.Tk()
 root.tk.call("source", "sun-valley.tcl")
 root.tk.call("set_theme", "light")
-ico = Image.open("pdf.png")
+ico = Image.open("pdf_blue.png")
 photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
 mygui = PDFMerger(root)
-root.minsize(900, 300)
-root.maxsize(900, 300)
+root.minsize(660, 300)
+root.maxsize(660, 300)
 root.mainloop()
