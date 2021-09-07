@@ -30,7 +30,7 @@ class PDFMerger:
         canvas = tk.Canvas(self.master, width=200, height=100)
         canvas.grid(column=2, row=0, rowspan=5)
 
-        img = Image.open("file.png")
+        img = Image.open("icons/file.png")
         img = img.resize((150, 150))
 
         img = ImageTk.PhotoImage(img)
@@ -112,10 +112,11 @@ class PDFMerger:
             os.startfile(pdf_output_pdf.name)
 
 
-root = tk.Tk()
-root.tk.call("source", "sun-valley.tcl")
+root = tk.Tk(className="PDF merger")
+dir_path = os.path.dirname(os.path.realpath(__file__))
+root.tk.call("source", os.path.join(dir_path, "theme/sun-valley.tcl"))
 root.tk.call("set_theme", "light")
-ico = Image.open("pdf_color.png")
+ico = Image.open("icons/pdf_color.png")
 photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
 mygui = PDFMerger(root)
