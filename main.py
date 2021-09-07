@@ -7,6 +7,14 @@ from widgets.tkinter_PDFselector import PDFselector
 
 import PyPDF2
 from PIL import Image, ImageTk
+import typing
+import subprocess
+import os
+import platform
+
+# TODO add readme
+# TODO add license
+# TODO add compiled file for win/linux
 
 
 class PDFMerger:
@@ -53,6 +61,7 @@ class PDFMerger:
             for page_num in range(pdf_object.pdf_merge_num_pages):
                 page_obj = pdf_object.pdf.getPage(page_num)
                 merged_pdf.addPage(page_obj)
+            return True
         else:
             if len(pdf_object.pdfname.cget("text").split()) > 1:
                 pages_list = pdf_object.pdf_merge_num_pages.split(";")
@@ -69,6 +78,7 @@ class PDFMerger:
                         if pages:
                             page_obj = pdf_object.pdf.getPage(int(pages.strip()) - 1)
                             merged_pdf.addPage(page_obj)
+                return True
             else:
                 messagebox.showwarning(
                     title="Warning", message="Pages range is not set."
@@ -96,6 +106,10 @@ class PDFMerger:
         messagebox.showinfo(title="Information", message="PDFs merged!")
         self.first_selector.clear()
         self.second_selector.clear()
+        if platform.system() == "Linux":
+            subprocess.call(["xdg-open", pdf_output_pdf.name])
+        else:
+            os.startfile(pdf_output_pdf.name)
 
 
 root = tk.Tk()

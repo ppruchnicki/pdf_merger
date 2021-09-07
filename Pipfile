@@ -8,6 +8,7 @@ pdbpp = "*"
 tk = "*"
 PyPDF2 = "*"
 Pillow = "*"
+pypdf2 = "*"
 
 [dev-packages]
 

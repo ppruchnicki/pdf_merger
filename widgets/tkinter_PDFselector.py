@@ -8,6 +8,7 @@ import PyPDF2
 
 import os
 import re
+import typing
 
 
 class PDFselector(object):
